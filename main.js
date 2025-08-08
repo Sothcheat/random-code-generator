@@ -9,6 +9,17 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
+// Fix for graphics rendering issues on Linux
+app.commandLine.appendSwitch('--disable-gpu-sandbox');
+app.commandLine.appendSwitch('--disable-software-rasterizer');
+app.commandLine.appendSwitch('--disable-gpu-compositing');
+app.commandLine.appendSwitch('--disable-background-timer-throttling');
+app.commandLine.appendSwitch('--disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('--disable-renderer-backgrounding');
+
+// Alternative: Use software rendering if hardware acceleration is problematic
+// app.disableHardwareAcceleration();
+
 function createWindow() {
   // Create the browser window
   const mainWindow = new BrowserWindow({
@@ -19,11 +30,18 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+                                       // Additional web preferences to help with rendering
+                                       experimentalFeatures: false,
+                                       enableRemoteModule: false,
+                                       worldSafeExecuteJavaScript: true
     },
     icon: path.join(__dirname, 'assets', 'icon.png'), // Will fallback to available formats
                                        titleBarStyle: 'default',
-                                       show: false // Don't show until ready
+                                       show: false, // Don't show until ready
+                                       // Additional window options for better rendering
+                                       backgroundColor: '#667eea', // Match your app's background
+                                       webSecurity: true
   });
 
   // Load the HTML file
@@ -32,6 +50,11 @@ function createWindow() {
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+
+    // Optional: Force a repaint to ensure proper rendering
+    mainWindow.webContents.executeJavaScript(`
+    document.body.style.transform = 'translateZ(0)';
+    `);
   });
 
   // Create application menu
@@ -98,10 +121,23 @@ function createWindow() {
     require('electron').shell.openExternal(url);
     return { action: 'deny' };
   });
+
+  // Handle graphics context lost (helps with rendering issues)
+  mainWindow.webContents.on('gpu-process-crashed', (event, killed) => {
+    console.log('GPU process crashed, reloading...');
+    mainWindow.reload();
+  });
 }
 
 // This method will be called when Electron has finished initialization
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+
+  // Set app user model ID for Windows (optional but good practice)
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.yourname.random-code-generator');
+  }
+});
 
 // Quit when all windows are closed, except on macOS
 app.on('window-all-closed', () => {
@@ -124,4 +160,23 @@ app.on('web-contents-created', (event, contents) => {
     navigationEvent.preventDefault();
     require('electron').shell.openExternal(navigationURL);
   });
+});
+
+// Handle certificate errors (optional security enhancement)
+app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
+  event.preventDefault();
+  callback(false);
+});
+
+// Clean up resources when app is about to quit
+app.on('before-quit', () => {
+  // Clean up any resources if needed
+  if (process.env.NODE_ENV === 'development') {
+    // Remove electron-reload listeners
+    try {
+      require('electron-reload').cleanup();
+    } catch (err) {
+      // Ignore cleanup errors in development
+    }
+  }
 });

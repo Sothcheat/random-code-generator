@@ -161,9 +161,14 @@
             transition: opacity 0.3s ease;
         }
 
+        .copy-notification.show {
+            opacity: 1;
+        }
+
         .studio-selector {
             margin: 25px 0;
             text-align: center;
+            position: relative;
         }
 
         .studio-selector label {
@@ -194,21 +199,6 @@
             position: relative;
         }
 
-        .studio-selector select:after {
-            content: '▼';
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: white;
-            pointer-events: none;
-        }
-
-        .studio-selector {
-            position: relative;
-            display: inline-block;
-        }
-
         .studio-selector::after {
             content: '▼';
             position: absolute;
@@ -235,6 +225,20 @@
             background: white;
             color: #333;
             padding: 10px;
+        }
+
+        .studio-info {
+            margin: 15px 0;
+            padding: 12px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            color: #333;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .studio-info.hide {
+            display: none;
         }
 
         .shortcut-hint {
@@ -435,7 +439,7 @@
     </div>
 
     <script>
-        // Popular studio codes
+        // Popular studio codes for random selection
         const studioCodes = [
             'DASD', 'DAZD', 'JUK', 'JUX', 'JUY', 'JUL', 'JUFD', 'JUFE',
             'SSIS', 'SSNI', 'STARS', 'SOE', 'IPX', 'IPZ', 'IPTD', 'IDBD',
@@ -455,11 +459,39 @@
             'ACHJ', 'ACRN', 'ACME', 'ACMN', 'YSSD', 'YSSA', 'YSSB'
         ];
 
+        // Studio information mapping
+        const studioInfo = {
+            'SSIS': { name: 'S1 No.1 Style', desc: 'Premium adult entertainment studio known for high-quality productions' },
+            'SSNI': { name: 'S1 No.1 Style', desc: 'Another series from S1 No.1 Style studio' },
+            'STARS': { name: 'SOD Create', desc: 'Popular studio under SOD Create label' },
+            'IPX': { name: 'Idea Pocket', desc: 'High-end productions from Idea Pocket' },
+            'IPZ': { name: 'Idea Pocket', desc: 'Classic series from Idea Pocket studio' },
+            'PRED': { name: 'Premium', desc: 'Premium quality productions' },
+            'ABP': { name: 'Prestige', desc: 'Prestige studio productions' },
+            'DASD': { name: 'Das!', desc: 'Popular series from Das! studio' },
+            'MIDE': { name: 'MOODYZ', desc: 'MOODYZ studio production series' },
+            'MIDV': { name: 'MOODYZ', desc: 'Another MOODYZ studio series' },
+            'MIMK': { name: 'MOODYZ', desc: 'MOODYZ original content series' }
+        };
+
         let currentCode = '';
 
         function generateRandomCode() {
-            const randomStudioIndex = Math.floor(Math.random() * studioCodes.length);
-            const studioCode = studioCodes[randomStudioIndex];
+            const studioSelect = document.getElementById('studioSelect');
+            const selectedValue = studioSelect.value;
+
+            let studioCode;
+
+            if (selectedValue === 'random') {
+                // Generate random studio from the list
+                const randomStudioIndex = Math.floor(Math.random() * studioCodes.length);
+                studioCode = studioCodes[randomStudioIndex];
+            } else {
+                // Use the selected studio code
+                studioCode = selectedValue;
+            }
+
+            // Always generate random 3-digit number
             const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
             currentCode = `${studioCode}-${randomNumber}`;
 
@@ -467,9 +499,31 @@
             resultDisplay.classList.add('pulse');
             resultDisplay.textContent = currentCode;
 
+            // Update studio info if available
+            updateStudioInfo(studioCode, selectedValue === 'random');
+
             setTimeout(() => {
                 resultDisplay.classList.remove('pulse');
             }, 600);
+        }
+
+        function updateStudioInfo(studioCode, isRandom) {
+            const studioInfoDiv = document.getElementById('studioInfo');
+            const studioNameSpan = document.getElementById('selectedStudioName');
+            const studioDescSpan = document.getElementById('selectedStudioDesc');
+
+            if (studioInfo[studioCode]) {
+                const info = studioInfo[studioCode];
+                studioNameSpan.textContent = `${studioCode} - ${info.name}`;
+                studioDescSpan.textContent = info.desc;
+                studioInfoDiv.classList.remove('hide');
+
+                if (isRandom) {
+                    studioDescSpan.textContent += ' (Randomly selected)';
+                }
+            } else {
+                studioInfoDiv.classList.add('hide');
+            }
         }
 
         function copyToClipboard() {
@@ -478,6 +532,14 @@
                     showCopyNotification();
                 }).catch(err => {
                     console.error('Failed to copy: ', err);
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = currentCode;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showCopyNotification();
                 });
             }
         }
@@ -490,10 +552,38 @@
             }, 2000);
         }
 
+        // Save and load user's studio preference
+        function saveStudioPreference(value) {
+            try {
+                localStorage.setItem('selectedStudio', value);
+            } catch (e) {
+                // LocalStorage not available, ignore
+            }
+        }
+
+        function loadStudioPreference() {
+            try {
+                const saved = localStorage.getItem('selectedStudio');
+                if (saved && saved !== 'null') {
+                    const studioSelect = document.getElementById('studioSelect');
+                    studioSelect.value = saved;
+                }
+            } catch (e) {
+                // LocalStorage not available, ignore
+            }
+        }
+
         // Event listeners
         document.getElementById('generateBtn').addEventListener('click', generateRandomCode);
         document.getElementById('copyBtn').addEventListener('click', copyToClipboard);
         document.getElementById('resultDisplay').addEventListener('click', copyToClipboard);
+
+        // Save preference when studio selection changes
+        document.getElementById('studioSelect').addEventListener('change', function() {
+            saveStudioPreference(this.value);
+            // Auto-generate new code when studio changes
+            generateRandomCode();
+        });
 
         // Keyboard shortcut
         document.addEventListener('keydown', (e) => {
@@ -510,8 +600,11 @@
             });
         }
 
-        // Generate initial code when app loads
-        window.addEventListener('load', generateRandomCode);
+        // Initialize app when loaded
+        window.addEventListener('load', () => {
+            loadStudioPreference();
+            generateRandomCode();
+        });
     </script>
 </body>
 </html>
