@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Code Generator</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 550px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            position: relative;
+            box-sizing: border-box;
+            min-height: fit-content;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 2.2em;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            line-height: 1.2;
+        }
+
+        .result-display {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 25px 0;
+            font-size: 2.2em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            user-select: all;
+            cursor: pointer;
+            word-break: break-all;
+            line-height: 1.2;
+        }
+
+        .result-display:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 5px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(79, 172, 254, 0.6);
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+        }
+
+        .generate-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(168, 237, 234, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 5px;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(168, 237, 234, 0.6);
+        }
+
+        .buttons {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .info {
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.85em;
+            line-height: 1.5;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .pulse {
+            animation: pulse 0.6s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .copy-notification {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .studio-selector {
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .studio-selector label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .studio-selector select {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 40px 12px 20px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            min-width: 250px;
+            width: 100%;
+            max-width: 350px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            position: relative;
+        }
+
+        .studio-selector select:after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            pointer-events: none;
+        }
+
+        .studio-selector {
+            position: relative;
+            display: inline-block;
+        }
+
+        .studio-selector::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            pointer-events: none;
+            font-size: 0.8em;
+            z-index: 1;
+        }
+
+        .studio-selector select:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .studio-selector select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+
+        .studio-selector select option {
+            background: white;
+            color: #333;
+            padding: 10px;
+        }
+
+        .shortcut-hint {
+            margin-top: 15px;
+            color: #888;
+            font-size: 0.8em;
+            font-style: italic;
+        }
+
+        /* Responsive breakpoints */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+
+            .result-display {
+                font-size: 1.6em;
+                padding: 15px;
+                min-height: 50px;
+                margin: 15px 0;
+            }
+
+            .generate-btn, .copy-btn {
+                padding: 10px 20px;
+                font-size: 0.9em;
+                margin: 3px;
+            }
+
+            .info {
+                font-size: 0.75em;
+                padding: 12px;
+            }
+
+            .shortcut-hint {
+                font-size: 0.7em;
+            }
+        }
+
+        @media (max-height: 500px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.6em;
+                margin-bottom: 15px;
+            }
+
+            .result-display {
+                font-size: 1.4em;
+                padding: 12px;
+                margin: 10px 0;
+                min-height: 40px;
+            }
+
+            .buttons {
+                margin: 10px 0;
+            }
+
+            .info {
+                margin-top: 10px;
+                padding: 10px;
+                font-size: 0.7em;
+            }
+
+            .shortcut-hint {
+                margin-top: 8px;
+                font-size: 0.65em;
+            }
+        }
+
+        /* Ultra small windows */
+        @media (max-width: 400px) {
+            .container {
+                padding: 15px;
+                margin: 5px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .result-display {
+                font-size: 1.3em;
+                padding: 10px;
+            }
+
+            .generate-btn, .copy-btn {
+                padding: 8px 16px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="copy-notification" id="copyNotification">Copied to clipboard!</div>
+
+        <h1>🎲 Random Code Generator</h1>
+
+        <div class="studio-selector">
+            <label for="studioSelect">Choose Studio:</label>
+            <div class="select-wrapper">
+                <select id="studioSelect">
+                    <option value="random">🎲 Random Studio</option>
+                    <option value="SSIS">SSIS - S1 No.1 Style</option>
+                    <option value="SSNI">SSNI - S1 No.1 Style</option>
+                    <option value="STARS">STARS - SOD Create</option>
+                    <option value="IPX">IPX - Idea Pocket</option>
+                    <option value="IPZ">IPZ - Idea Pocket</option>
+                    <option value="PRED">PRED - Premium</option>
+                    <option value="ABP">ABP - Prestige</option>
+                    <option value="DASD">DASD - Das!</option>
+                    <option value="MIDE">MIDE - MOODYZ</option>
+                    <option value="MIDV">MIDV - MOODYZ</option>
+                    <option value="MIMK">MIMK - MOODYZ</option>
+                    <option value="WANZ">WANZ - Wanz Factory</option>
+                    <option value="PPPD">PPPD - Oppai</option>
+                    <option value="EBOD">EBOD - E-Body</option>
+                    <option value="CAWD">CAWD - kawaii</option>
+                    <option value="CJOD">CJOD - Chijo Heaven</option>
+                    <option value="RBD">RBD - Attackers</option>
+                    <option value="SHKD">SHKD - Attackers</option>
+                    <option value="ADN">ADN - Attackers</option>
+                    <option value="JUL">JUL - Madonna</option>
+                    <option value="JUX">JUX - Madonna</option>
+                    <option value="JUY">JUY - Madonna</option>
+                    <option value="XVSR">XVSR - Max-A</option>
+                    <option value="REAL">REAL - Real Works</option>
+                    <option value="SW">SW - Switch</option>
+                    <option value="HUNT">HUNT - Hunter</option>
+                    <option value="HUNTA">HUNTA - Hunter</option>
+                    <option value="DANDY">DANDY - Dandy</option>
+                    <option value="NHDTA">NHDTA - Natural High</option>
+                    <option value="IENE">IENE - IE NERGY</option>
+                    <option value="GETS">GETS - Prestige</option>
+                    <option value="CLUB">CLUB - Samansa</option>
+                    <option value="FSET">FSET - F&A</option>
+                    <option value="LOVE">LOVE - First Star</option>
+                    <option value="SILK">SILK - Silk Labo</option>
+                    <option value="BBAN">BBAN - bibian</option>
+                    <option value="AUKG">AUKG - U&K</option>
+                    <option value="UMSO">UMSO - K.M.Produce</option>
+                    <option value="KTKL">KTKL - Kotekote</option>
+                    <option value="KTKC">KTKC - Kotekote</option>
+                    <option value="KTKZ">KTKZ - Kotekote</option>
+                    <option value="BLK">BLK - Blackship</option>
+                    <option value="KAWD">KAWD - kawaii</option>
+                    <option value="DDOB">DDOB - Dogma</option>
+                    <option value="DASS">DASS - Das!</option>
+                    <option value="FOCS">FOCS - Faleno</option>
+                    <option value="ROYD">ROYD - Royal</option>
+                    <option value="ACHJ">ACHJ - Akinori</option>
+                    <option value="YSSD">YSSD - YS</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="result-display" id="resultDisplay" title="Click to copy">
+            Click Generate to get a random code!
+        </div>
+
+        <div class="studio-info hide" id="studioInfo">
+            <strong>Selected Studio:</strong> <span id="selectedStudioName"></span><br>
+            <span id="selectedStudioDesc"></span>
+        </div>
+
+        <div class="buttons">
+            <button class="generate-btn" id="generateBtn">
+                Generate Random Code
+            </button>
+            <button class="copy-btn" id="copyBtn">
+                Copy Code
+            </button>
+        </div>
+
+        <div class="info">
+            <strong>How it works:</strong><br>
+            • Choose a specific studio or keep it random<br>
+            • Generates random 3-digit numbers (000-999) for your selected studio<br>
+            • Click the result to copy automatically<br><br>
+            <strong>Features:</strong><br>
+            • 45+ popular studios to choose from<br>
+            • Studio information and descriptions<br>
+            • Use Ctrl+G to generate new codes quickly<br>
+            • Smart selection: remembers your last choice
+        </div>
+
+        <div class="shortcut-hint">
+            💡 Tip: Press Ctrl+G for quick generation
+        </div>
+    </div>
+
+    <script>
+        // Popular studio codes
+        const studioCodes = [
+            'DASD', 'DAZD', 'JUK', 'JUX', 'JUY', 'JUL', 'JUFD', 'JUFE',
+            'SSIS', 'SSNI', 'STARS', 'SOE', 'IPX', 'IPZ', 'IPTD', 'IDBD',
+            'MIDE', 'MIDD', 'MIDV', 'MIMK', 'MIGD', 'MIAE', 'MIAD',
+            'PRED', 'PGD', 'PPPD', 'PPSD', 'ABP', 'ABS', 'WANZ', 'WNZ',
+            'XVSR', 'CESD', 'CWM', 'REAL', 'RBD', 'SHKD', 'ADN', 'ATID',
+            'JBD', 'GTJ', 'MDTM', 'MDYD', 'SPRD', 'VNDS', 'HAVD', 'HBAD',
+            'HUNTA', 'HUNT', 'DVDES', 'SDDE', 'SVDVD', 'SW', 'NHDTA',
+            'DANDY', 'IENE', 'IANF', 'GETS', 'GS', 'GDHH', 'GDTM',
+            'CLUB', 'FSET', 'FST', 'FSRE', 'LOVE', 'SILK', 'SILKC',
+            'BBAN', 'AUKG', 'HAVD', 'LZDM', 'LZBS', 'LZSG', 'LZWM',
+            'TEK', 'TEKC', 'NASS', 'NATR', 'UMSO', 'UMSE', 'KTKL',
+            'KTKC', 'KTKZ', 'KTKX', 'BLK', 'BLKP', 'EBOD', 'EBON',
+            'PPPD', 'PPSD', 'PPBE', 'OPPW', 'OPUD', 'OPBD', 'KAWD',
+            'KWSD', 'CAWD', 'CJOD', 'CJOB', 'DDOB', 'DDFF', 'DDHP',
+            'DASS', 'FOCS', 'FOCM', 'ROYD', 'ROYS', 'ROYE',
+            'ACHJ', 'ACRN', 'ACME', 'ACMN', 'YSSD', 'YSSA', 'YSSB'
+        ];
+
+        let currentCode = '';
+
+        function generateRandomCode() {
+            const randomStudioIndex = Math.floor(Math.random() * studioCodes.length);
+            const studioCode = studioCodes[randomStudioIndex];
+            const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            currentCode = `${studioCode}-${randomNumber}`;
+
+            const resultDisplay = document.getElementById('resultDisplay');
+            resultDisplay.classList.add('pulse');
+            resultDisplay.textContent = currentCode;
+
+            setTimeout(() => {
+                resultDisplay.classList.remove('pulse');
+            }, 600);
+        }
+
+        function copyToClipboard() {
+            if (currentCode) {
+                navigator.clipboard.writeText(currentCode).then(() => {
+                    showCopyNotification();
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+            }
+        }
+
+        function showCopyNotification() {
+            const notification = document.getElementById('copyNotification');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+
+        // Event listeners
+        document.getElementById('generateBtn').addEventListener('click', generateRandomCode);
+        document.getElementById('copyBtn').addEventListener('click', copyToClipboard);
+        document.getElementById('resultDisplay').addEventListener('click', copyToClipboard);
+
+        // Keyboard shortcut
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
+                e.preventDefault();
+                generateRandomCode();
+            }
+        });
+
+        // Listen for menu-triggered generation (from Electron main process)
+        if (window.electronAPI) {
+            window.electronAPI.onGenerateCode(() => {
+                generateRandomCode();
+            });
+        }
+
+        // Generate initial code when app loads
+        window.addEventListener('load', generateRandomCode);
+    </script>
+</body>
+</html>
